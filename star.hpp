@@ -1,15 +1,16 @@
 #include "MyAI.h"
 #include "utils.hpp"
 
-const int DIS_VAL[5] = {100, 5, 2, 1, 0};
+const int DIS_VAL[5] = {100, 7, 3, 1, 0};
+const int PNUM_VAL[7] = {-100, 1, 2, 3, 4, 5, 6};
 
 // return a number that indicates how good/bad the current position is for player pov
 // considering piece number, mobility, distance to the goal,,etc
 double MyAI::EvalBoard(){
     int R_piece_num = this->red_piece_num;
     int B_piece_num = this->blue_piece_num;
-    int R_mobility = mobility(this->red_exist) - 6;
-    int B_mobility = mobility(this->blue_exist) - 6;
+    int R_mobility = mobility(this->red_exist) - 4;
+    int B_mobility = mobility(this->blue_exist) - 4;
     int R_distance = 99;
     int B_distance = 99;
     // 
@@ -23,14 +24,16 @@ double MyAI::EvalBoard(){
             if(temp_d<B_distance)B_distance=temp_d;
         }
     }
-    double W1 = 0.2;
+    double W1 = 0.1;
     double W2 = 0.3;
     double W3 = 1.0;
 
     //double R_score = R_piece_num*W1+R_mobility*W2+(5 - R_distance)*W3;
     //double B_score = B_piece_num*W1+B_mobility*W2+(5 - B_distance)*W3;
-    double R_score = R_piece_num*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
-    double B_score = B_piece_num*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
+    //double R_score = R_piece_num*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
+    //double B_score = B_piece_num*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
+    double R_score = PNUM_VAL[R_piece_num]*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
+    double B_score = PNUM_VAL[B_piece_num]*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
 
 
     if(this->color == RED)return R_score-B_score;
