@@ -193,6 +193,10 @@ int MyAI::Get_Color(){
 	return this->color;
 }
 
+void MyAI::Set_Dice(int i){
+	this->dice = i;
+}
+
 void MyAI::Generate_move(char* move)
 {
 	int result[100];

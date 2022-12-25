@@ -97,3 +97,141 @@ void pick_max_eval(MyAI* myai, int legal_moves[100], int move_count, int* piece,
         }
     }
 }
+
+void pick_ab_with_depth(char position[25], int color, int depth, int dice, int* piece, int* start_point, int* end_point);
+void pick_ab_iterative(char position[25], int color, int dice, int* piece, int* start_point, int* end_point);
+
+//double Star_0_F_3_0(char position[25], double alpha, double beta, int depth);
+double F_3_0(char position[25], int color, double alpha, double beta, int depth, int dice=0);
+double G_3_0(char position[25], int color, double alpha, double beta, int depth, int dice=0);
+
+void pick_ab_iterative(char position[25], int color, int dice, int* p, int* s, int* e){
+    // time constraint to be implement
+    int depth = 1;
+    int piece, start_point, end_point;
+    while(depth < 5){
+        pick_ab_with_depth(position, color, depth, dice, &piece, &start_point, &end_point);
+        depth++;
+    }
+    *p = piece;
+    *s = start_point;
+    *e = end_point;
+}
+
+
+void pick_ab_with_depth(char position[25], int color, int depth, int dice, int* piece, int* start_point, int* end_point){
+    double eval = -999;
+    double temp_eval;
+    MyAI tempAI;
+    tempAI.Set_board(position);
+    tempAI.Set_Color(color);
+    tempAI.Set_Dice(dice);
+    int result[100];
+    int b = tempAI.get_legal_move(result);
+    for(int i=0;i<b;i++){
+        char next_position[25];
+        get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
+        temp_eval = G_3_0(next_position, color_reverse(color),-999, 999, depth);
+        if(eval < temp_eval){
+            eval = temp_eval;
+            *piece = result[i*3];
+            *start_point = result[i*3+1];
+            *end_point = result[i*3+2];
+        }
+    }
+}
+
+
+double F_3_0(char position[25], int color, double alpha, double beta, int depth, int dice=0){
+    // Init
+    MyAI node_ai;
+    int result[100];
+    node_ai.Set_board(position);
+    node_ai.Set_Color(color);
+    if(depth == 0){
+        // reach depth restriction
+        return node_ai.EvalBoard();
+    }
+
+    if(dice!=0){
+        // the root node (max)
+        // already know the dice
+        node_ai.Set_Dice(dice);
+        int b = node_ai.get_legal_move(result);
+        double m = -999;
+        double t;
+        // Check terminate conditions
+        if(b == 0){
+            // terminal node
+            return node_ai.EvalBoard();
+        }
+        // dive deeper
+        for(int i=0;i<b;i++){
+            char next_position[25];
+            get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
+            t = G_3_0(next_position, color_reverse(color),std::max(alpha, m), beta, depth-1);
+            if(t > m) m = t;
+            if(m >= beta)return m;
+        }
+        return m;
+    }
+
+    // general case
+    double vsum = 0;
+    for(int d=0;d<PIECE_NUM;d++){
+        node_ai.Set_Dice(d+1);
+        int b = node_ai.get_legal_move(result);
+        double m = -999;
+        double t;
+
+        if(b == 0){
+            // terminal node
+            return node_ai.EvalBoard();
+        }
+        // dive deeper
+        for(int i=0;i<b;i++){
+            char next_position[25];
+            get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
+            t = G_3_0(next_position, color_reverse(color),-999, 999, depth-1);
+            if(t > m) m = t;
+        }
+        vsum += m;
+    }
+    return vsum / PIECE_NUM;
+}
+
+double G_3_0(char position[25], int color, double alpha, double beta, int depth, int dice=0){
+    // Init
+    MyAI node_ai;
+    int result[100];
+    node_ai.Set_board(position);
+    node_ai.Set_Color(color);
+    if(depth == 0){
+        // reach depth restriction
+        return node_ai.EvalBoard();
+    }
+
+    // general case
+    double vsum = 0;
+    for(int d=0;d<PIECE_NUM;d++){
+        node_ai.Set_Dice(d+1);
+        int b = node_ai.get_legal_move(result);
+        double m = 999;
+        double t;
+
+        if(b == 0){
+            // terminal node
+            return node_ai.EvalBoard();
+        }
+        // dive deeper
+        for(int i=0;i<b;i++){
+            char next_position[25];
+            get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
+            t = F_3_0(next_position, color_reverse(color),-999, 999, depth-1);
+            if(t < m) m = t;
+        }
+        vsum += m;
+    }
+    return vsum / PIECE_NUM;
+}
+

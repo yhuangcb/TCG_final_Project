@@ -41,12 +41,14 @@ public:
 	void Get(const char* data[], char* response);
 	void Exit(const char* data[], char* response);
 
-	char position[32];
+	char position[25];
 	double EvalBoard();
 	void Set_board(char* position);
 	void Make_move(const int piece, const int start_point, const int end_point);
 	void Set_Color(int color);
 	int Get_Color();
+	void Set_Dice(int i);
+	int get_legal_move(int* result); 
 
 private:
 	bool red_exist[PIECE_NUM], blue_exist[PIECE_NUM];
@@ -64,7 +66,7 @@ private:
 	void Print_position();
 	void Generate_move(char* move);
 	
-	int get_legal_move(int* result); 
+	
 	int referee(int piece, int* src, int* dst);
 
 	
