@@ -277,6 +277,16 @@ int MyAI::get_legal_move(int* result)
 	int move_count = 0;
 	int result_count = 0;
 
+	/// return 0 if someone win
+	if(this->board[0][0] < 7 && this->board[0][0] != 0){
+		return 0;
+	}
+	if(this->board[BOARD_SIZE-1][BOARD_SIZE-1] > 6){
+		return 0;
+	}
+
+	///
+
 	if(this->color == BLUE)
 	{
 		// the corresponding piece is alive
