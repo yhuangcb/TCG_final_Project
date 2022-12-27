@@ -71,6 +71,7 @@ private:
 
 	
 	int Dis2Goal(int piece);
+	void position_refresh(const int start_point, const int end_point);
 	/*
 	1, need to implement undo move and history and stuff
 	2, starting from pick max eval

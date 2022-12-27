@@ -1,6 +1,7 @@
 #include "float.h"
 #include "MyAI.h"
 #include "star.hpp"
+#include <string>
 
 MyAI::MyAI(void){}
 
@@ -114,6 +115,43 @@ void MyAI::Init_board_state(char* position)
 	}
 }
 
+void MyAI::position_refresh(const int start_point, const int end_point){
+	int start_row = start_point / BOARD_SIZE;
+	int start_col = start_point % BOARD_SIZE;
+	int end_row = end_point / BOARD_SIZE;
+	int end_col = end_point % BOARD_SIZE;
+	//char new_position[25];
+
+	char s[3] = {'A', '1'};
+	char e[3] = {'A', '1'};
+	s[0] += start_col;
+	s[1] += start_row;
+	e[0] += end_col;
+	e[1] += end_row;
+
+	string new_position(this->position);
+	//fprintf(stderr, "\ns:%s, e:%s\n", s, e);
+
+	// kill the piece occupying the end location, if any
+	size_t index = new_position.find(e, 0);
+	if(index != std::string::npos){
+		//new_position.replace(index, 2, "0");
+		//fprintf(stderr, "\nDEBUG\n");
+		new_position[index] = '0';
+		new_position.erase(index+1, 1);
+	}
+	//fprintf(stderr, "\nDEBUG\n");
+	// change the moving piece's location
+	index = new_position.find(s, 0);
+	//new_position.replace(index, 2, e);
+	new_position[index] = e[0];
+	new_position[index+1] = e[1];
+	//fprintf(stderr, "\nDEBUG2\n");
+	
+	strcpy(this->position, new_position.c_str());
+
+}
+
 void MyAI::Set_board(char* position)
 {	
 	strcpy(this->position, position);
@@ -212,10 +250,17 @@ void MyAI::Generate_move(char* move)
 	fprintf(stderr, "\nEVAL: %f\n", eval);
 	this->Print_position();
 	//random_move(result, move_count, &piece, &start_point, &end_point);
-	pick_max_eval(this, result, move_count, &piece, &start_point, &end_point);
+	//pick_max_eval(this, result, move_count, &piece, &start_point, &end_point);
+	pick_ab_iterative(this->position, this->Get_Color(), this->dice, &piece, &start_point, &end_point);
+
+
+	//fprintf(stderr, "\nPOSITION:%s\n", this->position);
 
 	sprintf(move, "%c%c%c%c", 'A' + start_point % BOARD_SIZE, '1' + start_point / BOARD_SIZE, 'A' + end_point % BOARD_SIZE, '1' + end_point / BOARD_SIZE);
 	this->Make_move(piece, start_point, end_point);
+	this->position_refresh(start_point, end_point);
+	//fprintf(stderr, "\nNEW_POSITION:%s\n", this->position);
+	
 	// print the result
 	fprintf(stderr, "============================\nMy result:\n");
 	if(piece <= PIECE_NUM) fprintf(stderr, "Blue piece %d: (%c%c) -> (%c%c)\n", piece, move[0], move[1], move[2], move[3]);
@@ -434,4 +479,6 @@ void MyAI::Make_move(const int piece, const int start_point, const int end_point
 		}
 	}
 	this->board[end_row][end_col] = piece;
+
+	this->position_refresh(start_point, end_point);
 }

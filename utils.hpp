@@ -30,12 +30,14 @@ int mobility(bool exist[PIECE_NUM]){
     return count;
 }
 
-void get_next_position(char position[25], int color, int p, int s, int e, char new_position[25]){
+void get_next_position(char* position, int color, int p, int s, int e, char* new_position){
     MyAI temp;
     temp.Set_board(position);
     temp.Set_Color(color);
     temp.Make_move(p, s, e);
     strcpy(new_position, temp.position);
+    //fprintf(stderr, "\nOriginal Position: %s\n", position);
+    //fprintf(stderr, "\nNext Position: %s\n", new_position);
 }
 
 int color_reverse(int color){
