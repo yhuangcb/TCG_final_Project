@@ -49,6 +49,9 @@ void MyAI::board2bitset(){
         int p_col = p % BOARD_SIZE;
         temp = this->board[p_row][p_col]; // 1~6 & 7~12
         if(temp != 0){
+            //fprintf(stderr, "\n%s\n", bb.to_string().c_str());
+            //fprintf(stderr, "\n%d, %d, %d\n", p, K, temp);
+            //fprintf(stderr, "\n%s\n", RN_TABLE[p * K + temp - 1].to_string().c_str());
             bb ^= RN_TABLE[p * K + temp - 1];
         }
     }
@@ -118,10 +121,15 @@ void free_table(HashTable* table){
 }
 
 int hash_function(bitset<HASH_KEY_LENGTH> key){
-    return (int)(key << (HASH_KEY_LENGTH - HASH_KEY_LENGTH)).to_ulong();
+    return (int)((key >> (HASH_KEY_LENGTH - HASH_INDEX_LENGTH)).to_ulong());
 }
 
-void ht_insert(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double value){
+void ht_insert(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double value, int color){
+    // record eval in BLUE pov
+    if(color == RED){
+        value *= -1;
+    }
+    //
     Ht_item* item = create_item(key, depth, value);
     int index = hash_function(key);
     Ht_item* current_item = table->items[index];
@@ -145,18 +153,28 @@ void ht_insert(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double 
         }
         // Case 2, collision
         else{
-            fprintf(stderr, "\nCollision Occurred !!\n");
+            //fprintf(stderr, "\nCollision Occurred !!\n");
         }
         return;
     }
 }
 
-bool ht_search(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double* value){
+bool ht_search(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double* value, int color){
     int index = hash_function(key);
+    //fprintf(stderr, "\nindex: %lu\n", index);
     Ht_item* item = table->items[index];
     if(item == NULL) return false; // Not Found
     if(item->depth < depth) return false; // Shallow
-    *value = item->value; // Hit
+
+    // HIT
+    // remember the value is in BLUE pov
+    if(color == RED){
+        *value = item->value * -1 ;
+    }
+    else{
+        *value = item->value; 
+    }
+    
     return true;
 }
 

@@ -288,15 +288,18 @@ double G_3_1_H(char position[25], int color, double alpha, double beta, int dept
     node_ai.Set_Color(color);
     if(depth == 0){
         // reach depth restriction
-        ht_insert(myHashTable, node_ai.board_bit, depth, node_ai.EvalBoard());
+        ht_insert(myHashTable, node_ai.board_bit, depth, node_ai.EvalBoard(), color);
+        //fprintf(stderr, "\nCOUNT: %d\n", myHashTable->count);
         return node_ai.EvalBoard();
     }
+
+    
     // Check Hash Table
     double hash_value;
-    if(ht_search(myHashTable, node_ai.board_bit, depth, &hash_value)){
+    if(ht_search(myHashTable, node_ai.board_bit, depth, &hash_value, color)){
         return hash_value;
     }
-
+    //fprintf(stderr, "\nDEBUG\n");
     // general case
     double vsum = 0;
     double A_[PIECE_NUM+1] = {0};
@@ -308,6 +311,7 @@ double G_3_1_H(char position[25], int color, double alpha, double beta, int dept
     M_[0] = V_MAX;
     m_[0] = V_MIN;
 
+
     for(int d=0;d<PIECE_NUM;d++){
         node_ai.Set_Dice(d+1);
         int b = node_ai.get_legal_move(result);
@@ -316,9 +320,11 @@ double G_3_1_H(char position[25], int color, double alpha, double beta, int dept
 
         if(b == 0){
             // terminal node
-            ht_insert(myHashTable, node_ai.board_bit, depth, node_ai.EvalBoard());
+            ht_insert(myHashTable, node_ai.board_bit, depth, node_ai.EvalBoard(), color);
             return node_ai.EvalBoard();
         }
+
+        
         // dive deeper
         for(int i=0;i<b;i++){
             char next_position[25];
@@ -332,19 +338,19 @@ double G_3_1_H(char position[25], int color, double alpha, double beta, int dept
         M_[d+1] = M_[d] + ((m - V_MAX) / (double)PIECE_NUM);
         if(m >= B_[d]){
             //fprintf(stderr, "\nFAILED HIGH\n");
-            ht_insert(myHashTable, node_ai.board_bit, depth, m_[d+1]);
+            ht_insert(myHashTable, node_ai.board_bit, depth, m_[d+1], color);
             return m_[d+1];
         } 
         if(m <= A_[d]){
             //fprintf(stderr, "\nFAILED LOW\n");
-            ht_insert(myHashTable, node_ai.board_bit, depth, M_[d+1]);
+            ht_insert(myHashTable, node_ai.board_bit, depth, M_[d+1], color);
             return M_[d+1];
         } 
         vsum += m;
         A_[d+1] = A_[d] + V_MAX - m;
         B_[d+1] = B_[d] + V_MIN - m;
     }
-    ht_insert(myHashTable, node_ai.board_bit, depth, vsum/PIECE_NUM);
+    ht_insert(myHashTable, node_ai.board_bit, depth, vsum/PIECE_NUM, color);
     return vsum / PIECE_NUM;
 }
 

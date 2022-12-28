@@ -31,6 +31,7 @@ void MyAI::Board_setting(const char* data[], char* response)
 	// Initialize hash table
 	initialize_RN_TABLE();
 	myHashTable = create_table(pow(2,HASH_INDEX_LENGTH));
+	this->board_bit = 0;
 	//
 
 	this->board_size = stoi(data[1]);
@@ -205,6 +206,8 @@ void MyAI::Set_board(char* position)
 	}
 	//fprintf(stderr, "\nThe current board:\n");
 	//this->Print_chessboard();
+
+	if(this->board_bit == 0)this->board2bitset();
 }
 
 void MyAI::Print_chessboard()
