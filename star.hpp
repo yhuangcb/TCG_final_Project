@@ -4,6 +4,9 @@
 const int DIS_VAL[5] = {100, 7, 3, 1, 0};
 const int PNUM_VAL[7] = {-100, 1, 2, 3, 4, 5, 6};
 
+const double V_MAX = 30.0;
+const double V_MIN = -30.0;
+
 // return a number that indicates how good/bad the current position is for player pov
 // considering piece number, mobility, distance to the goal,,etc
 double MyAI::EvalBoard(){
@@ -104,6 +107,7 @@ void pick_ab_iterative(char position[25], int color, int dice, int* piece, int* 
 //double Star_0_F_3_0(char position[25], double alpha, double beta, int depth);
 //double F_3_0(char position[25], int color, double alpha, double beta, int depth);
 double G_3_0(char position[25], int color, double alpha, double beta, int depth);
+double G_3_1(char position[25], int color, double alpha, double beta, int depth);
 
 void pick_ab_iterative(char position[25], int color, int dice, int* p, int* s, int* e){
     // time constraint to be implement
@@ -131,7 +135,7 @@ void pick_ab_with_depth(char position[25], int color, int depth, int dice, int* 
     for(int i=0;i<b;i++){
         char next_position[25];
         get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
-        temp_eval = -1 * G_3_0(next_position, color_reverse(color),-999, 999, depth);
+        temp_eval = -1 * G_3_1(next_position, color_reverse(color),-30, 30, depth);
         //fprintf(stderr, "\nNext Position: %s\n", next_position);
         //fprintf(stderr, "\ntemp_EVAL: %f\n", temp_eval);
         if(eval < temp_eval){
@@ -212,6 +216,64 @@ double G_3_0(char position[25], int color, double alpha, double beta, int depth)
             if(t > m) m = t;
         }
         vsum += m;
+    }
+    return vsum / PIECE_NUM;
+}
+
+double G_3_1(char position[25], int color, double alpha, double beta, int depth){
+    // Init
+    MyAI node_ai;
+    int result[100];
+    node_ai.Set_board(position);
+    node_ai.Set_Color(color);
+    if(depth == 0){
+        // reach depth restriction
+        return node_ai.EvalBoard();
+    }
+
+    // general case
+    double vsum = 0;
+    double A_[PIECE_NUM+1] = {0};
+    double B_[PIECE_NUM+1] = {0};
+    double M_[PIECE_NUM+1] = {0};
+    double m_[PIECE_NUM+1] = {0};
+    A_[0] = ((alpha - V_MAX) * PIECE_NUM) + V_MAX;
+    B_[0] = ((beta - V_MIN) * PIECE_NUM) + V_MIN;
+    M_[0] = V_MAX;
+    m_[0] = V_MIN;
+
+    for(int d=0;d<PIECE_NUM;d++){
+        node_ai.Set_Dice(d+1);
+        int b = node_ai.get_legal_move(result);
+        double m = -999;
+        double t;
+
+        if(b == 0){
+            // terminal node
+            return node_ai.EvalBoard();
+        }
+        // dive deeper
+        for(int i=0;i<b;i++){
+            char next_position[25];
+            get_next_position(position, color, result[i*3], result[i*3+1], result[i*3+2], next_position); 
+            t = -1 * G_3_1(next_position, color_reverse(color),std::max(V_MIN, A_[d]), std::min(B_[d],V_MAX), depth-1);
+            if(t > m){
+                m = t;
+            }
+        }
+        m_[d+1] = m_[d] + ((m - V_MIN) / (double)PIECE_NUM);
+        M_[d+1] = M_[d] + ((m - V_MAX) / (double)PIECE_NUM);
+        if(m >= B_[d]){
+            //fprintf(stderr, "\nFAILED HIGH\n");
+            return m_[d+1];
+        } 
+        if(m <= A_[d]){
+            //fprintf(stderr, "\nFAILED LOW\n");
+            return M_[d+1];
+        } 
+        vsum += m;
+        A_[d+1] = A_[d] + V_MAX - m;
+        B_[d+1] = B_[d] + V_MIN - m;
     }
     return vsum / PIECE_NUM;
 }
