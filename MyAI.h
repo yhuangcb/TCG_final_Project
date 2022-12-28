@@ -7,6 +7,7 @@
 #include <math.h>
 #include <time.h>
 #include <string>
+#include<bitset>
 
 using std::stoi;
 using std::string;
@@ -49,6 +50,10 @@ public:
 	int Get_Color();
 	void Set_Dice(int i);
 	int get_legal_move(int* result); 
+
+	std::bitset<64> board_bit;
+	void board2bitset();
+	void bitset_refresh(const int piece, const int start_point, const int end_point);
 
 private:
 	bool red_exist[PIECE_NUM], blue_exist[PIECE_NUM];

@@ -1,6 +1,7 @@
 #include "float.h"
 #include "MyAI.h"
 #include "star.hpp"
+#include "table.hpp"
 #include <string>
 
 MyAI::MyAI(void){}
@@ -10,6 +11,7 @@ MyAI::~MyAI(void){}
 void MyAI::Name(const char* data[], char* response)
 {
 	strcpy(response, "MyAI");
+	fprintf(stderr, "\nNAME\n");
 }
 
 void MyAI::Version(const char* data[], char* response)
@@ -26,6 +28,11 @@ void MyAI::Time_setting(const char* data[], char* response)
 
 void MyAI::Board_setting(const char* data[], char* response)
 {
+	// Initialize hash table
+	initialize_RN_TABLE();
+	myHashTable = create_table(pow(2,HASH_INDEX_LENGTH));
+	//
+
 	this->board_size = stoi(data[1]);
 	this->red_piece_num = stoi(data[2]);
 	this->blue_piece_num = stoi(data[2]);
@@ -34,6 +41,9 @@ void MyAI::Board_setting(const char* data[], char* response)
 
 void MyAI::Ini(const char* data[], char* response)
 {
+
+	
+
 	// set color
 	if(!strcmp(data[1], "R"))
 	{
@@ -80,6 +90,7 @@ void MyAI::Get(const char* data[], char* response)
 
 void MyAI::Exit(const char* data[], char* response)
 {
+	free_table(myHashTable);
 	fprintf(stderr, "Bye~\n");
 }
 
@@ -473,22 +484,33 @@ void MyAI::Make_move(const int piece, const int start_point, const int end_point
 	int end_col = end_point % BOARD_SIZE;
 
 	this->board[start_row][start_col] = 0;
+	// remove piece on start point
+	this->board_bit ^= RN_TABLE[start_point * K + piece - 1];
+	//
 
 	// there has another piece on the target sqaure
-	if(this->board[end_row][end_col] > 0)
+	int target_square = this->board[end_row][end_col];
+	if(target_square > 0)
 	{
-		if(this->board[end_row][end_col] <= PIECE_NUM)
+		// remove piece on end point
+		this->board_bit ^= RN_TABLE[end_point * K + target_square - 1];
+		//
+		if(target_square <= PIECE_NUM)
 		{
-			this->blue_exist[this->board[end_row][end_col] - 1] = 0;
+			this->blue_exist[target_square - 1] = 0;
 			this->blue_piece_num--;
 		}
 		else
 		{
-			this->red_exist[this->board[end_row][end_col] - 7] = 0;
+			this->red_exist[target_square - 7] = 0;
 			this->red_piece_num--;			
 		}
 	}
 	this->board[end_row][end_col] = piece;
+
+	// put the piece on the end point
+	this->board_bit ^= RN_TABLE[end_point * K + piece - 1];
+	//
 
 	this->position_refresh(start_point, end_point);
 }
