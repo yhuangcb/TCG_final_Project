@@ -115,13 +115,18 @@ void pick_ab_iterative(char position[25], int color, int dice, int* p, int* s, i
     // time constraint to be implement
     int depth = 1;
     int piece, start_point, end_point;
-    while(depth < 6){
+    fprintf(stderr, "\nallowed diff: %f, expect steps: %d\n", mytimer->allowed_diff, mytimer->E_remain_step);
+    
+    while(time_permission(mytimer)){
         pick_ab_with_depth(position, color, depth, dice, &piece, &start_point, &end_point);
         depth++;
     }
     *p = piece;
     *s = start_point;
     *e = end_point;
+    
+    fprintf(stderr, "\nCount: %d, Collision: %d\n", myHashTable->count, myHashTable->collision);
+    timer_step(mytimer);
 }
 
 

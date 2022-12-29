@@ -11,7 +11,7 @@ using namespace std;
 const int K = PIECE_NUM * 2;
 const int R = BOARD_SIZE * BOARD_SIZE;
 const int HASH_KEY_LENGTH = 64;
-const int HASH_INDEX_LENGTH = 20;
+const int HASH_INDEX_LENGTH = 30;
 
 std::bitset<HASH_KEY_LENGTH> RN_TABLE[K * R];
 
@@ -81,6 +81,7 @@ struct HashTable{
     Ht_item** items;
     int size;
     int count;
+    int collision;
 };
 HashTable* myHashTable;
 
@@ -97,6 +98,7 @@ HashTable* create_table(int size){
     HashTable* table = (HashTable*) malloc(sizeof(HashTable));
     table->size = size;
     table->count = 0;
+    table->collision = 0;
     table->items = (Ht_item**) calloc(table->size, sizeof(Ht_item*));
     for(int i=0; i<table->size;i++){
         table->items[i] = NULL;
@@ -154,6 +156,12 @@ void ht_insert(HashTable* table, bitset<HASH_KEY_LENGTH> key, int depth, double 
         // Case 2, collision
         else{
             //fprintf(stderr, "\nCollision Occurred !!\n");
+            // Still replace
+            if(current_item->depth < depth){
+                current_item->depth = depth;
+                current_item->value = value;
+            }
+            table->collision++;
         }
         return;
     }

@@ -54,6 +54,7 @@ public:
 	std::bitset<64> board_bit;
 	void board2bitset();
 	void bitset_refresh(const int piece, const int start_point, const int end_point);
+	int Get_avail_time();
 
 private:
 	bool red_exist[PIECE_NUM], blue_exist[PIECE_NUM];

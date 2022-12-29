@@ -32,6 +32,7 @@ void MyAI::Board_setting(const char* data[], char* response)
 	initialize_RN_TABLE();
 	myHashTable = create_table(pow(2,HASH_INDEX_LENGTH));
 	this->board_bit = 0;
+	mytimer->working = false;
 	//
 
 	this->board_size = stoi(data[1]);
@@ -92,6 +93,7 @@ void MyAI::Get(const char* data[], char* response)
 void MyAI::Exit(const char* data[], char* response)
 {
 	free_table(myHashTable);
+	mytimer->working = false;
 	fprintf(stderr, "Bye~\n");
 }
 
@@ -208,6 +210,9 @@ void MyAI::Set_board(char* position)
 	//this->Print_chessboard();
 
 	if(this->board_bit == 0)this->board2bitset();
+	if(!mytimer->working){
+		timer_init(mytimer, this->Get_avail_time());
+	}
 }
 
 void MyAI::Print_chessboard()
@@ -247,6 +252,11 @@ int MyAI::Get_Color(){
 
 void MyAI::Set_Dice(int i){
 	this->dice = i;
+}
+
+int MyAI::Get_avail_time(){
+	if(this->color == RED)return this->red_time;
+	else return this->blue_time;
 }
 
 void MyAI::Generate_move(char* move)
