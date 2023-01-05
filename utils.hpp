@@ -63,7 +63,7 @@ struct NODE{
 
 //#define parent(ptr) (nodes[ptr].p_id)       // id of ptr's parent
 //#define child(ptr, i) (nodes[ptr].c_id[i])  // the ith child of ptr
-const int EXPECT_TOTAL_STEP = 30;
+const int EXPECT_TOTAL_STEP = 20;
 
 //typedef struct myTimer myTimer;
 struct myTimer{
@@ -82,7 +82,7 @@ void timer_init(myTimer* mt, int avail_time){
     mt->E_remain_step = EXPECT_TOTAL_STEP;
     mt->total_time = avail_time * 1000;
     mt->remain = mt->total_time;
-    mt->allowed_diff = mt->remain / mt->E_remain_step;
+    mt->allowed_diff = mt->remain / mt->E_remain_step / 2;
     mt->working = true;
 }
 
@@ -92,7 +92,7 @@ void timer_step(myTimer* mt){
     }
     mt->remain -= std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - mt->start).count();
     mt->start = std::chrono::system_clock::now();
-    mt->allowed_diff = mt->remain / mt->E_remain_step;
+    mt->allowed_diff = mt->remain / mt->E_remain_step / 2;
 }
 
 bool time_permission(myTimer* mt){

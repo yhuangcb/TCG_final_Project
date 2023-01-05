@@ -2,8 +2,8 @@
 #include "utils.hpp"
 #include "table.hpp"
 
-const int DIS_VAL[6] = {100, 7, 3, 1, 0, 0};
-const int PNUM_VAL[7] = {-100, 1, 2, 3, 4, 5, 6};
+const int DIS_VAL[6] = {40, 7, 3, 1, 0, 0};
+const int PNUM_VAL[7] = {-40, 1, 2, 3, 4, 5, 6};
 
 const double V_MAX = 30.0;
 const double V_MIN = -30.0;
@@ -13,8 +13,8 @@ const double V_MIN = -30.0;
 double MyAI::EvalBoard(){
     int R_piece_num = this->red_piece_num;
     int B_piece_num = this->blue_piece_num;
-    int R_mobility = mobility(this->red_exist) - 4;
-    int B_mobility = mobility(this->blue_exist) - 4;
+    //int R_mobility = mobility(this->red_exist) - 4;
+    //int B_mobility = mobility(this->blue_exist) - 4;
     int R_distance = 5;
     int B_distance = 5;
     // 
@@ -28,16 +28,19 @@ double MyAI::EvalBoard(){
             if(temp_d<B_distance)B_distance=temp_d;
         }
     }
-    double W1 = 0.1;
-    double W2 = 0.3;
+    double W1 = 0.4;
+    double W2 = 0.2;
     double W3 = 1.0;
 
     //double R_score = R_piece_num*W1+R_mobility*W2+(5 - R_distance)*W3;
     //double B_score = B_piece_num*W1+B_mobility*W2+(5 - B_distance)*W3;
     //double R_score = R_piece_num*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
     //double B_score = B_piece_num*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
-    double R_score = PNUM_VAL[R_piece_num]*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
-    double B_score = PNUM_VAL[B_piece_num]*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
+
+    //double R_score = PNUM_VAL[R_piece_num]*W1+R_mobility*W2+DIS_VAL[R_distance]*W3;
+    //double B_score = PNUM_VAL[B_piece_num]*W1+B_mobility*W2+DIS_VAL[B_distance]*W3;
+    double R_score = PNUM_VAL[R_piece_num]*W1+DIS_VAL[R_distance]*W3;
+    double B_score = PNUM_VAL[B_piece_num]*W1+DIS_VAL[B_distance]*W3;
 
 
     if(this->color == RED)return R_score-B_score;
@@ -115,6 +118,7 @@ void pick_ab_iterative(char position[25], int color, int dice, int* p, int* s, i
     // time constraint to be implement
     int depth = 1;
     int piece, start_point, end_point;
+    mytimer.start = std::chrono::system_clock::now();
     fprintf(stderr, "\nallowed diff: %f, expect steps: %d\n", mytimer.allowed_diff, mytimer.E_remain_step);
 
     while(time_permission(&mytimer) && depth < 16){
